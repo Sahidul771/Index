@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0">
+
+<meta name="theme-color" content="#075b35">
+
+<title>Barcode & QR Scanner</title>
+
+<!-- ZXing Browser -->
+<script src="https://unpkg.com/@zxing/browser@0.2.1"></script>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    min-height: 100%;
+}
+
+body {
+    font-family: Arial, Helvetica, sans-serif;
+
+    background:
+        radial-gradient(
+            circle at top,
+            #0b8b4d 0%,
+            #075b35 45%,
+            #022d1b 100%
+        );
+
+    color: white;
+}
+
+.app {
+    width: 100%;
+    max-width: 680px;
+    margin: auto;
+    padding: 14px;
+}
+
+/* =========================
+   HEADER
+========================= */
+
+.header {
+    text-align: center;
+
+    padding: 22px 15px;
+
+    border: 2px solid #e4b941;
+    border-radius: 22px;
+
+    background: rgba(0, 0, 0, 0.20);
+
+    box-shadow:
+        0 0 25px rgba(228, 185, 65, 0.15);
+}
+
+.logo {
+    width: 78px;
+    height: 78px;
+
+    margin: 0 auto 12px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border: 3px solid #f4cf67;
+    border-radius: 22px;
+
+    background: #075b35;
+
+    box-shadow:
+        0 0 22px rgba(244, 207, 103, 0.30);
+}
+
+.logo svg {
+    width: 50px;
+    height: 50px;
+
+    fill: none;
+    stroke: #f4cf67;
+
+    stroke-width: 3;
+
+    stroke-linecap: round;
+    stroke-linejoin: round;
+}
+
+h1 {
+    margin: 0;
+
+    color: #f4cf67;
+
+    font-size: 27px;
+}
+
+.subtitle {
+    margin-top: 8px;
+
+    color: #d8f0e2;
+
+    font-size: 14px;
+}
+
+/* =========================
+   SCANNER CARD
+========================= */
+
+.scanner-card {
+    margin-top: 18px;
+
+    padding: 15px;
+
+    border: 2px solid #e4b941;
+    border-radius: 22px;
+
+    background: rgba(0, 0, 0, 0.20);
+}
+
+.camera {
+    position: relative;
+
+    width: 100%;
+
+    overflow: hidden;
+
+    border: 2px solid #e4b941;
+    border-radius: 16px;
+
+    background: #001c10;
+
+    aspect-ratio: 4 / 3;
+}
+
+#video {
+    display: block;
+
+    width: 100%;
+    height: 100%;
+
+    object-fit: cover;
+
+    background: #001c10;
+}
+
+/* Scanner box */
+
+.scan-box {
+    position: absolute;
+
+    width: 72%;
+    height: 45%;
+
+    left: 14%;
+    top: 27.5%;
+
+    border: 2px solid #f4cf67;
+
+    border-radius: 13px;
+
+    pointer-events: none;
+
+    box-shadow:
+        0 0 0 9999px rgba(0, 0, 0, 0.30),
+        0 0 25px rgba(244, 207, 103, 0.65);
+}
+
+.scan-line {
+    position: absolute;
+
+    left: 5%;
+
+    width: 90%;
+
+    height: 2px;
+
+    background: #f4cf67;
+
+    box-shadow:
+        0 0 12px #f4cf67;
+
+    animation: scan 1.8s infinite ease-in-out;
+}
+
+@keyframes scan {
+
+    0% {
+        top: 5%;
+    }
+
+    50% {
+        top: 90%;
+    }
+
+    100% {
+        top: 5%;
+    }
+}
+
+.camera-help {
+    margin-top: 12px;
+
+    text-align: center;
+
+    color: #d8f0e2;
+
+    font-size: 13px;
+}
+
+/* =========================
+   BUTTONS
+========================= */
+
+.buttons {
+    display: flex;
+
+    gap: 10px;
+
+    margin-top: 15px;
+}
+
+button {
+    flex: 1;
+
+    min-height: 50px;
+
+    padding: 12px;
+
+    border: 2px solid #e4b941;
+    border-radius: 13px;
+
+    background: #098047;
+
+    color: white;
+
+    font-size: 16px;
+
+    font-weight: bold;
+
+    cursor: pointer;
+}
+
+button:hover {
+    background: #0b9653;
+}
+
+button:active {
+    transform: scale(0.98);
+}
+
+button:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+}
+
+.stop-button {
+    background: #685013;
+}
+
+/* =========================
+   STATUS
+========================= */
+
+#status {
+    min-height: 24px;
+
+    margin-top: 12px;
+
+    padding: 5px;
+
+    text-align: center;
+
+    color: #d8f0e2;
+
+    font-size: 14px;
+}
+
+.status-error {
+    color: #ffcf88 !important;
+}
+
+.status-success {
+    color: #a9ffd0 !important;
+}
+
+/* =========================
+   RESULT
+========================= */
+
+.result-card {
+    display: none;
+
+    margin-top: 18px;
+
+    padding: 18px;
+
+    border: 2px solid #e4b941;
+    border-radius: 22px;
+
+    background: rgba(0, 0, 0, 0.20);
+}
+
+.result-card.show {
+    display: block;
+}
+
+.result-title {
+    color: #f4cf67;
+
+    font-size: 20px;
+
+    font-weight: bold;
+
+    margin-bottom: 10px;
+}
+
+.type {
+    display: inline-block;
+
+    padding: 5px 10px;
+
+    margin-bottom: 12px;
+
+    border: 1px solid #e4b941;
+
+    border-radius: 20px;
+
+    color: #f4cf67;
+
+    font-size: 12px;
+}
+
+.result-text {
+    min-height: 70px;
+
+    padding: 14px;
+
+    border: 1px solid #e4b941;
+
+    border-radius: 11px;
+
+    background: #032d1b;
+
+    color: white;
+
+    word-break: break-word;
+
+    line-height: 1.5;
+
+    font-size: 15px;
+}
+
+/* =========================
+   COPY
+========================= */
+
+.copy-button {
+    width: 100%;
+
+    margin-top: 12px;
+}
+
+/* =========================
+   LINK
+========================= */
+
+.link-box {
+    display: none;
+
+    margin-top: 13px;
+
+    padding: 14px;
+
+    border: 2px solid #e4b941;
+
+    border-radius: 13px;
+
+    background: rgba(228, 185, 65, 0.10);
+}
+
+.link-box.show {
+    display: block;
+}
+
+.link-title {
+    margin-bottom: 9px;
+
+    color: #f4cf67;
+
+    font-weight: bold;
+}
+
+.open-link {
+    display: block;
+
+    padding: 13px;
+
+    border: 1px solid #e4b941;
+
+    border-radius: 10px;
+
+    background: #098047;
+
+    color: white;
+
+    text-align: center;
+
+    text-decoration: none;
+
+    font-weight: bold;
+}
+
+/* =========================
+   AI SECTION
+========================= */
+
+.ai-box {
+    margin-top: 13px;
+
+    padding: 14px;
+
+    border: 2px solid #e4b941;
+
+    border-radius: 13px;
+
+    background: rgba(0, 0, 0, 0.14);
+}
+
+.ai-title {
+    color: #f4cf67;
+
+    font-weight: bold;
+
+    margin-bottom: 8px;
+}
+
+.ai-message {
+    color: #d8f0e2;
+
+    font-size: 13px;
+
+    line-height: 1.5;
+}
+
+/* =========================
+   FOOTER
+========================= */
+
+footer {
+    margin-top: 22px;
+
+    padding: 18px 10px;
+
+    border-top: 2px solid #e4b941;
+
+    text-align: center;
+
+    color: #f4cf67;
+
+    font-size: 13px;
+}
+
+/* =========================
+   MOBILE
+========================= */
+
+@media (max-width: 480px) {
+
+    .app {
+        padding: 10px;
+    }
+
+    h1 {
+        font-size: 24px;
+    }
+
+    .buttons {
+        flex-direction: column;
+    }
+
+    .camera {
+        aspect-ratio: 3 / 4;
+    }
+
+    .scan-box {
+        width: 78%;
+        left: 11%;
+
+        height: 42%;
+        top: 29%;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- HEADER -->
+
+    <section class="header">
+
+        <div class="logo">
+
+            <svg viewBox="0 0 64 64">
+
+                <path d="M8 22V12a4 4 0 0 1 4-4h10"/>
+                <path d="M42 8h10a4 4 0 0 1 4 4v10"/>
+
+                <path d="M56 42v10a4 4 0 0 1-4 4H42"/>
+                <path d="M22 56H12a4 4 0 0 1-4-4V42"/>
+
+                <path d="M16 32h32"/>
+
+                <path d="M20 27v10"/>
+                <path d="M26 24v16"/>
+                <path d="M32 27v10"/>
+                <path d="M38 24v16"/>
+                <path d="M44 27v10"/>
+
+            </svg>
+
+        </div>
+
+        <h1>
+            Barcode & QR Scanner
+        </h1>
+
+        <div class="subtitle">
+            Scan barcode or QR code instantly
+        </div>
+
+    </section>
+
+
+    <!-- SCANNER -->
+
+    <section class="scanner-card">
+
+        <div class="camera">
+
+            <video
+                id="video"
+                autoplay
+                muted
+                playsinline>
+            </video>
+
+            <div class="scan-box">
+                <div class="scan-line"></div>
+            </div>
+
+        </div>
+
+        <div class="camera-help">
+            Put the barcode or QR code inside the box
+        </div>
+
+        <div class="buttons">
+
+            <button
+                id="startButton"
+                type="button">
+                📷 Start Scanner
+            </button>
+
+            <button
+                id="stopButton"
+                class="stop-button"
+                type="button">
+                ⏹ Stop
+            </button>
+
+        </div>
+
+        <div id="status">
+            Ready to scan.
+        </div>
+
+    </section>
+
+
+    <!-- RESULT -->
+
+    <section
+        id="resultCard"
+        class="result-card">
+
+        <div class="result-title">
+            Scan Result
+        </div>
+
+        <div
+            id="codeType"
+            class="type">
+            Detected
+        </div>
+
+        <div
+            id="resultText"
+            class="result-text">
+        </div>
+
+        <button
+            id="copyButton"
+            class="copy-button"
+            type="button">
+            📋 Copy Result
+        </button>
+
+
+        <!-- LINK -->
+
+        <div
+            id="linkBox"
+            class="link-box">
+
+            <div class="link-title">
+                🔗 Link Detected
+            </div>
+
+            <a
+                id="openLink"
+                class="open-link"
+                href="#"
+                target="_blank"
+                rel="noopener noreferrer">
+
+                🌐 Open Link
+
+            </a>
+
+        </div>
+
+
+        <!-- AI PLACEHOLDER -->
+
+        <div class="ai-box">
+
+            <div class="ai-title">
+                🤖 AI Information
+            </div>
+
+            <div
+                id="aiMessage"
+                class="ai-message">
+
+                Gemini AI can be connected through a
+                secure backend. Your API key should
+                never be placed in this public HTML file.
+
+            </div>
+
+        </div>
+
+    </section>
+
+</div>
+
+
+<footer>
+    © Mohammad Sahidul Islam
+</footer>
+
+
+<script>
+
+/* =====================================
+   ELEMENTS
+===================================== */
+
+const video =
+    document.getElementById("video");
+
+const status =
+    document.getElementById("status");
+
+const startButton =
+    document.getElementById("startButton");
+
+const stopButton =
+    document.getElementById("stopButton");
+
+const copyButton =
+    document.getElementById("copyButton");
+
+const resultCard =
+    document.getElementById("resultCard");
+
+const resultText =
+    document.getElementById("resultText");
+
+const codeType =
+    document.getElementById("codeType");
+
+const linkBox =
+    document.getElementById("linkBox");
+
+const openLink =
+    document.getElementById("openLink");
+
+
+/* =====================================
+   VARIABLES
+===================================== */
+
+let reader = null;
+
+let controls = null;
+
+let currentResult = "";
+
+let scanning = false;
+
+
+/* =====================================
+   STATUS
+===================================== */
+
+function setStatus(message, type = "") {
+
+    status.textContent = message;
+
+    status.className = "";
+
+    if (type) {
+        status.classList.add(
+            "status-" + type
+        );
+    }
+}
+
+
+/* =====================================
+   START SCANNER
+===================================== */
+
+async function startScanner() {
+
+    if (scanning) {
+        return;
+    }
+
+    /*
+       HTTPS check.
+
+       GitHub Pages uses HTTPS automatically.
+    */
+
+    if (
+        location.protocol !== "https:" &&
+        location.hostname !== "localhost" &&
+        location.hostname !== "127.0.0.1"
+    ) {
+
+        setStatus(
+            "⚠️ Open this page using HTTPS.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    if (
+        !navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia
+    ) {
+
+        setStatus(
+            "❌ This browser does not support camera access.",
+            "error"
+        );
+
+        return;
+    }
+
+
+    try {
+
+        scanning = true;
+
+        startButton.disabled = true;
+
+        setStatus(
+            "📷 Requesting camera permission..."
+        );
+
+
+        /*
+           Create the ZXing reader.
+
+           @zxing/browser is loaded above.
+        */
+
+        reader =
+            new ZXingBrowser.BrowserMultiFormatReader();
+
+
+        /*
+           No device ID is supplied.
+
+           ZXing's documented behavior is to use
+           the environment-facing camera.
+        */
+
+        controls =
+            await reader.decodeFromVideoDevice(
+
+                undefined,
+
+                video,
+
+                (result, error) => {
+
+                    /*
+                       While scanning, ZXing can report
+                       normal "not found yet" errors.
+
+                       Ignore those.
+                    */
+
+                    if (!result) {
+                        return;
+                    }
+
+
+                    const text =
+                        result.getText();
+
+
+                    if (!text) {
+                        return;
+                    }
+
+
+                    showResult(
+                        text,
+                        result.getBarcodeFormat()
+                    );
+
+
+                    stopScanner();
+
+                }
+            );
+
+
+        setStatus(
+            "🔎 Scanning... Point your camera at a code."
+        );
+
+    }
+
+    catch (error) {
+
+        console.error(
+            "Camera error:",
+            error
+        );
+
+
+        scanning = false;
+
+        startButton.disabled = false;
+
+
+        if (
+            error.name === "NotAllowedError"
+        ) {
+
+            setStatus(
+                "❌ Camera permission was denied. Allow camera access and try again.",
+                "error"
+            );
+
+        }
+
+        else if (
+            error.name === "NotFoundError"
+        ) {
+
+            setStatus(
+                "❌ No camera was found.",
+                "error"
+            );
+
+        }
+
+        else if (
+            error.name === "NotReadableError"
+        ) {
+
+            setStatus(
+                "❌ Camera is already being used by another app.",
+                "error"
+            );
+
+        }
+
+        else {
+
+            setStatus(
+                "❌ Camera could not start: " +
+                (error.message || "Unknown error"),
+                "error"
+            );
+
+        }
+
+    }
+
+}
+
+
+/* =====================================
+   STOP SCANNER
+===================================== */
+
+function stopScanner() {
+
+    try {
+
+        if (controls) {
+
+            controls.stop();
+
+            controls = null;
+        }
+
+    }
+    catch (error) {
+
+        console.log(error);
+
+    }
+
+
+    /*
+       Extra cleanup.
+    */
+
+    if (video.srcObject) {
+
+        video.srcObject
+            .getTracks()
+            .forEach(
+                track => track.stop()
+            );
+
+        video.srcObject = null;
+    }
+
+
+    scanning = false;
+
+    startButton.disabled = false;
+
+    setStatus(
+        "Scanner stopped."
+    );
+
+}
+
+
+/* =====================================
+   SHOW RESULT
+===================================== */
+
+function showResult(text, format) {
+
+    currentResult = text;
+
+
+    resultCard.classList.add(
+        "show"
+    );
+
+
+    resultText.textContent =
+        text;
+
+
+    codeType.textContent =
+        "Detected: " +
+        getFormatName(format);
+
+
+    /*
+       If the scanned value is a URL,
+       show the Open Link button.
+    */
+
+    if (isWebURL(text)) {
+
+        linkBox.classList.add(
+            "show"
+        );
+
+        openLink.href = text;
+
+    }
+
+    else {
+
+        linkBox.classList.remove(
+            "show"
+        );
+
+        openLink.removeAttribute(
+            "href"
+        );
+
+    }
+
+
+    setStatus(
+        "✅ Code detected!",
+        "success"
+    );
+
+
+    setTimeout(() => {
+
+        resultCard.scrollIntoView({
+            behavior: "smooth",
+            block: "nearest"
+        });
+
+    }, 100);
+
+}
+
+
+/* =====================================
+   FORMAT NAME
+===================================== */
+
+function getFormatName(format) {
+
+    const value =
+        String(format);
+
+
+    if (value.includes("QR")) {
+        return "QR CODE";
+    }
+
+    if (value.includes("EAN_13")) {
+        return "EAN-13";
+    }
+
+    if (value.includes("EAN_8")) {
+        return "EAN-8";
+    }
+
+    if (value.includes("UPC_A")) {
+        return "UPC-A";
+    }
+
+    if (value.includes("UPC_E")) {
+        return "UPC-E";
+    }
+
+    if (value.includes("CODE_128")) {
+        return "CODE 128";
+    }
+
+    if (value.includes("CODE_39")) {
+        return "CODE 39";
+    }
+
+    if (value.includes("CODE_93")) {
+        return "CODE 93";
+    }
+
+    if (value.includes("ITF")) {
+        return "ITF";
+    }
+
+    if (value.includes("DATA_MATRIX")) {
+        return "DATA MATRIX";
+    }
+
+    if (value.includes("PDF_417")) {
+        return "PDF417";
+    }
+
+    return "BARCODE";
+}
+
+
+/* =====================================
+   URL CHECK
+===================================== */
+
+function isWebURL(text) {
+
+    try {
+
+        const url =
+            new URL(text);
+
+        return (
+            url.protocol === "https:" ||
+            url.protocol === "http:"
+        );
+
+    }
+
+    catch (error) {
+
+        return false;
+
+    }
+
+}
+
+
+/* =====================================
+   COPY RESULT
+===================================== */
+
+async function copyResult() {
+
+    if (!currentResult) {
+        return;
+    }
+
+
+    try {
+
+        await navigator.clipboard.writeText(
+            currentResult
+        );
+
+
+        const oldText =
+            copyButton.textContent;
+
+
+        copyButton.textContent =
+            "✅ Copied!";
+
+
+        setTimeout(() => {
+
+            copyButton.textContent =
+                oldText;
+
+        }, 1500);
+
+    }
+
+    catch (error) {
+
+        /*
+           Fallback for older browsers.
+        */
+
+        const textarea =
+            document.createElement(
+                "textarea"
+            );
+
+        textarea.value =
+            currentResult;
+
+        textarea.style.position =
+            "fixed";
+
+        textarea.style.left =
+            "-9999px";
+
+        document.body.appendChild(
+            textarea
+        );
+
+        textarea.select();
+
+        document.execCommand(
+            "copy"
+        );
+
+        textarea.remove();
+
+
+        copyButton.textContent =
+            "✅ Copied!";
+
+
+        setTimeout(() => {
+
+            copyButton.textContent =
+                "📋 Copy Result";
+
+        }, 1500);
+
+    }
+
+}
+
+
+/* =====================================
+   BUTTONS
+===================================== */
+
+startButton.addEventListener(
+    "click",
+    startScanner
+);
+
+stopButton.addEventListener(
+    "click",
+    stopScanner
+);
+
+copyButton.addEventListener(
+    "click",
+    copyResult
+);
+
+
+/* =====================================
+   CLEAN UP
+===================================== */
+
+window.addEventListener(
+    "pagehide",
+    stopScanner
+);
+
+</script>
+
+</body>
+</html>
